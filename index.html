@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마법서 공방 — 프로토타입</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>📖 마법서 공방 <span class="sub">crafting prototype</span></h1>
+    <div class="topbar-right">
+      <span class="coin">💰 <span id="gold">0</span></span>
+      <button id="newCommissionBtn" class="btn ghost">다른 의뢰 보기</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ 작업 영역 ============ -->
+    <section class="workspace">
+      <!-- 의뢰 카드 -->
+      <article class="commission card">
+        <div class="commission-head">
+          <span id="commissionType" class="badge">스크롤</span>
+          <span id="commissionFrom" class="from"></span>
+        </div>
+        <p id="commissionText" class="commission-text"></p>
+        <button id="analyzeBtn" class="btn">🔍 의뢰 분석하기</button>
+        <div id="analysisResult" class="analysis hidden"></div>
+      </article>
+
+      <!-- 단계 탭 -->
+      <nav class="tabs">
+        <button class="tab active" data-stage="circle">① 마법진</button>
+        <button class="tab" data-stage="spell">② 주문</button>
+        <button class="tab" data-stage="decorate">③ 꾸미기</button>
+        <button class="tab" data-stage="layout">④ 배치</button>
+      </nav>
+
+      <!-- 단계별 패널 -->
+      <div class="panels">
+        <!-- ① 마법진 -->
+        <div class="panel active" data-panel="circle">
+          <p class="hint">기하 도형으로 마법진의 뼈대를 세우고, 의뢰의 위협에 <b>반대되는 룬</b>을 새기세요.</p>
+          <div class="circle-builder">
+            <div class="palette">
+              <h4>구조 (기하)</h4>
+              <div id="shapePalette" class="chips"></div>
+              <h4>룬 (마법진 언어)</h4>
+              <div id="runePalette" class="chips"></div>
+              <p class="tiny">룬을 고른 뒤 마법진의 빈 자리를 클릭해 새기세요. 룬 두 개를 연결하면 콤보가 됩니다.</p>
+            </div>
+            <div class="circle-stage">
+              <svg id="circleSvg" viewBox="0 0 300 300"></svg>
+              <div class="circle-actions">
+                <button id="linkModeBtn" class="btn ghost small">🔗 연결 모드</button>
+                <button id="clearCircleBtn" class="btn ghost small">🗑 비우기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 주문 -->
+        <div class="panel" data-panel="spell">
+          <p class="hint">단어를 조합해 의뢰에 맞는 주문 문장을 지으세요. 어려운 의뢰일수록 길고 정확한 주문이 필요합니다.</p>
+          <div class="spell-builder">
+            <div class="word-bank" id="wordBank"></div>
+            <div class="spell-compose">
+              <h4>작성 중인 주문</h4>
+              <div id="spellLine" class="spell-line"></div>
+              <button id="clearSpellBtn" class="btn ghost small">지우기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ 꾸미기 -->
+        <div class="panel" data-panel="decorate">
+          <p class="hint">종이와 마법진, 주문을 꾸며 핵심을 강조하세요. 무엇을 강조할지가 점수를 가릅니다.</p>
+          <div class="decorate-grid">
+            <fieldset>
+              <legend>종이 외곽선</legend>
+              <select id="borderStyle">
+                <option value="none">없음</option>
+                <option value="simple">단순한 선</option>
+                <option value="ornate">화려한 장식</option>
+                <option value="rune">룬 테두리</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <legend>마법진 강조</legend>
+              <label>선 굵기 <input type="range" id="circleWidth" min="1" max="6" value="2" /></label>
+              <label>선 색 <input type="color" id="circleColor" value="#caa64a" /></label>
+              <label>채움 <input type="color" id="circleFill" value="#2a1f4a" /></label>
+              <label class="check"><input type="checkbox" id="circleGlow" /> 광휘 효과</label>
+            </fieldset>
+            <fieldset>
+              <legend>주문 강조</legend>
+              <p class="tiny">주문 단어를 클릭해 강조를 토글하세요.</p>
+              <div id="emphasisLine" class="spell-line small"></div>
+              <div class="emph-tools">
+                강조 스타일:
+                <label><input type="radio" name="emph" value="bold" checked /> <b>굵게</b></label>
+                <label><input type="radio" name="emph" value="italic" /> <i>기울임</i></label>
+                <label><input type="radio" name="emph" value="gold" /> <span style="color:#c9a227">금박</span></label>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <!-- ④ 배치 -->
+        <div class="panel" data-panel="layout">
+          <p class="hint">마법진과 주문을 페이지에 배치하고, 의뢰의 성격에 맞춰 무엇을 크게 강조할지 정하세요.</p>
+          <div class="layout-grid">
+            <fieldset>
+              <legend>배치 형태</legend>
+              <select id="layoutTemplate">
+                <option value="circleTop">마법진 위 · 주문 아래</option>
+                <option value="spellTop">주문 위 · 마법진 아래</option>
+                <option value="sideBySide">나란히</option>
+                <option value="circleHero">마법진 중심 (주문 작게)</option>
+                <option value="spellHero">주문 중심 (마법진 작게)</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <legend>핵심 강조</legend>
+              <label><input type="radio" name="focus" value="circle" checked /> 마법진 위주</label>
+              <label><input type="radio" name="focus" value="spell" /> 주문 위주</label>
+              <label><input type="radio" name="focus" value="balanced" /> 균형</label>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 미리보기 + 납품 ============ -->
+    <aside class="preview-pane">
+      <h3>완성된 페이지</h3>
+      <div id="bookPage" class="book-page">
+        <div id="pageCircle" class="page-circle"></div>
+        <div id="pageSpell" class="page-spell"></div>
+      </div>
+      <button id="deliverBtn" class="btn primary big">📦 납품하기</button>
+      <div id="scoreReport" class="score-report hidden"></div>
+    </aside>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="score.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
