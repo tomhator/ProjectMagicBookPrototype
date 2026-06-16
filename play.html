@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마법서 공방 — 프로토타입</title>
+  <!-- 이 파일은 자동 생성됨: node build.js (data/score/app/styles 인라인본). 소스는 분리 파일을 수정하세요. -->
+  <style>
+/* =========================================================
+   styles.css — 마법서 공방 프로토타입
+   ========================================================= */
+:root {
+  --bg: #0f0b1a;
+  --panel: #1a1430;
+  --panel2: #221a3d;
+  --ink: #e8e2f5;
+  --muted: #9a8fc0;
+  --gold: #e8c75a;
+  --accent: #8a6fff;
+  --line: #352a52;
+  --ok: #5ad08a;
+  --fail: #ff7a8a;
+  --parchment: #efe2c4;
+  --parchment-ink: #3a2a14;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 70% -10%, #251a45, var(--bg));
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ---- 상단 바 ---- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px; border-bottom: 1px solid var(--line);
+  background: rgba(20, 14, 40, 0.6); backdrop-filter: blur(6px);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar h1 { font-size: 20px; margin: 0; }
+.topbar .sub { font-size: 12px; color: var(--muted); font-weight: 400; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.coin { font-size: 16px; color: var(--gold); font-weight: 700; }
+
+/* ---- 레이아웃 ---- */
+.layout {
+  display: grid; grid-template-columns: 1fr 420px; gap: 20px;
+  padding: 20px; max-width: 1400px; margin: 0 auto; align-items: start;
+}
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.card, .preview-pane {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px;
+}
+
+/* ---- 의뢰 카드 ---- */
+.commission { margin-bottom: 16px; }
+.commission-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.badge {
+  font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+  background: var(--accent); color: #fff;
+}
+.badge.book { background: var(--gold); color: #2a1f00; }
+.from { color: var(--muted); font-size: 13px; }
+.commission-text {
+  line-height: 1.7; font-size: 15px; background: var(--panel2);
+  padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--accent);
+}
+.analysis {
+  margin-top: 12px; padding: 12px; border-radius: 10px;
+  background: rgba(138, 111, 255, 0.1); border: 1px solid var(--line);
+}
+.threat-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.threat-chip {
+  font-size: 13px; padding: 5px 10px; border-radius: 8px;
+  background: rgba(255, 122, 138, 0.12); border: 1px solid rgba(255, 122, 138, 0.3);
+}
+
+/* ---- 탭 ---- */
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab {
+  flex: 1; min-width: 90px; padding: 10px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--muted); border-radius: 10px;
+  cursor: pointer; font-size: 14px; font-weight: 600; transition: .15s;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.panels { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-height: 360px; }
+.panel { display: none; }
+.panel.active { display: block; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.6; margin-top: 0; }
+.hint b, .tiny b { color: var(--gold); }
+.tiny { font-size: 12px; color: var(--muted); }
+
+/* ---- 버튼 ---- */
+.btn {
+  border: 1px solid var(--line); background: var(--panel2); color: var(--ink);
+  padding: 9px 16px; border-radius: 10px; cursor: pointer; font-size: 14px;
+  font-weight: 600; transition: .15s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.ghost { background: transparent; }
+.btn.small { padding: 6px 12px; font-size: 13px; }
+.btn.big { width: 100%; padding: 14px; font-size: 16px; margin-top: 14px; }
+.btn.active { background: var(--gold); color: #2a1f00; border-color: var(--gold); }
+
+/* ---- 칩(팔레트/단어) ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip {
+  border: 1px solid var(--line); background: var(--panel2); color: var(--ink);
+  padding: 7px 11px; border-radius: 9px; cursor: pointer; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px; transition: .12s;
+}
+.chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+.chip .g { font-size: 16px; color: var(--gold); }
+.chip.selected { border-color: var(--gold); background: rgba(232, 199, 90, 0.15); box-shadow: 0 0 0 1px var(--gold) inset; }
+.chip.word { color: var(--parchment); }
+
+/* ---- 마법진 빌더 ---- */
+.circle-builder { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+@media (max-width: 760px) { .circle-builder { grid-template-columns: 1fr; } }
+.palette h4 { margin: 6px 0; font-size: 13px; color: var(--muted); }
+.circle-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.circle-stage svg {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #1a1430, #0d0a18);
+  border-radius: 14px; border: 1px solid var(--line);
+}
+.circle-actions { display: flex; gap: 8px; }
+
+/* ---- 주문 빌더 ---- */
+.spell-builder { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+@media (max-width: 760px) { .spell-builder { grid-template-columns: 1fr; } }
+.word-group h4 { margin: 4px 0 6px; font-size: 13px; color: var(--muted); }
+.spell-compose h4 { margin: 0 0 8px; font-size: 14px; }
+.spell-line {
+  min-height: 60px; background: var(--panel2); border-radius: 10px; padding: 10px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; margin-bottom: 8px;
+  border: 1px solid var(--line);
+}
+.spell-line.small { min-height: 40px; }
+.word-token {
+  background: var(--panel); border: 1px solid var(--line); padding: 5px 9px;
+  border-radius: 7px; cursor: pointer; font-size: 14px; transition: .12s;
+}
+.word-token:hover { border-color: var(--fail); }
+.placeholder { color: var(--muted); font-size: 13px; font-style: italic; }
+
+/* 강조 스타일 (작업/미리보기 공용) */
+.emph-bold { font-weight: 800; color: var(--gold); }
+.emph-italic { font-style: italic; color: var(--accent); }
+.emph-gold { color: #c9a227; text-shadow: 0 0 6px rgba(201,162,39,.6); font-weight: 700; }
+
+/* ---- 꾸미기 / 배치 ---- */
+.decorate-grid, .layout-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+fieldset {
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  min-width: 220px; flex: 1;
+}
+legend { color: var(--gold); font-size: 13px; padding: 0 6px; }
+fieldset label { display: block; margin: 8px 0; font-size: 14px; }
+fieldset label.check { display: flex; align-items: center; gap: 6px; }
+.emph-tools { margin-top: 10px; font-size: 13px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.emph-tools label { display: inline-flex; gap: 4px; align-items: center; }
+select, input[type="color"] { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+input[type="range"] { vertical-align: middle; }
+
+/* ---- 미리보기 페이지 ---- */
+.preview-pane { position: sticky; top: 80px; }
+.preview-pane h3 { margin: 0 0 12px; font-size: 15px; }
+.book-page {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at 30% 20%, #f4e9cf, var(--parchment));
+  color: var(--parchment-ink);
+  border-radius: 8px; padding: 22px; min-height: 460px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  box-shadow: inset 0 0 40px rgba(120, 90, 40, 0.25), 0 10px 30px rgba(0,0,0,.4);
+}
+.page-circle svg { width: 220px; height: 220px; background: transparent !important; border: none !important; }
+.page-spell {
+  text-align: center; line-height: 1.9; font-size: 16px;
+  font-family: 'Gowun Batang', 'Batang', serif; color: var(--parchment-ink);
+  max-width: 100%;
+}
+.page-spell .placeholder { color: #9a8255; }
+.page-spell .emph-bold { color: #7a3a12; }
+.page-spell .emph-italic { color: #4a2a8a; }
+.page-spell .emph-gold { color: #9a7510; text-shadow: 0 0 4px rgba(154,117,16,.4); }
+
+/* 외곽선 */
+.border-simple { box-shadow: inset 0 0 0 2px #b89a5a, inset 0 0 40px rgba(120,90,40,.25), 0 10px 30px rgba(0,0,0,.4); }
+.border-ornate { box-shadow: inset 0 0 0 3px #a8843c, inset 0 0 0 7px #efe2c4, inset 0 0 0 9px #a8843c, inset 0 0 40px rgba(120,90,40,.25), 0 10px 30px rgba(0,0,0,.4); }
+.border-rune { box-shadow: inset 0 0 0 2px #7a5a2a, inset 0 0 40px rgba(120,90,40,.25), 0 10px 30px rgba(0,0,0,.4); }
+.border-rune::before {
+  content: "✦ ☼ ◉ ✚ ✦ ☼ ◉ ✚ ✦ ☼ ◉ ✚"; position: absolute;
+}
+.book-page { position: relative; }
+.border-rune { padding-top: 30px; }
+
+/* 배치 템플릿 */
+.tmpl-spellTop { flex-direction: column-reverse; }
+.tmpl-sideBySide { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; }
+.tmpl-circleHero .page-spell { font-size: 13px; opacity: .85; }
+.tmpl-circleHero .page-circle svg { width: 260px; height: 260px; }
+.tmpl-spellHero .page-circle svg { width: 130px; height: 130px; }
+.tmpl-spellHero .page-spell { font-size: 19px; }
+.focus-circle .page-circle svg { width: 250px; height: 250px; }
+.focus-spell .page-spell { font-size: 18px; font-weight: 600; }
+
+/* ---- 점수 리포트 ---- */
+.score-report { margin-top: 16px; padding: 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); }
+.verdict { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+.verdict.ok { color: var(--ok); }
+.verdict.fail { color: var(--fail); }
+.score-num { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.breakdown { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.brow { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 8px; background: var(--panel2); border-radius: 6px; }
+.brow span:last-child { color: var(--gold); font-weight: 700; }
+.reward { color: var(--gold); font-weight: 800; font-size: 16px; margin-bottom: 10px; }
+.tips { font-size: 13px; background: rgba(255,122,138,.08); border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; }
+.tips ul { margin: 6px 0 0; padding-left: 18px; }
+.tips li { margin: 3px 0; color: var(--muted); }
+
+.hidden { display: none; }
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>📖 마법서 공방 <span class="sub">crafting prototype</span></h1>
+    <div class="topbar-right">
+      <span class="coin">💰 <span id="gold">0</span></span>
+      <button id="newCommissionBtn" class="btn ghost">다른 의뢰 보기</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ 작업 영역 ============ -->
+    <section class="workspace">
+      <!-- 의뢰 카드 -->
+      <article class="commission card">
+        <div class="commission-head">
+          <span id="commissionType" class="badge">스크롤</span>
+          <span id="commissionFrom" class="from"></span>
+        </div>
+        <p id="commissionText" class="commission-text"></p>
+        <button id="analyzeBtn" class="btn">🔍 의뢰 분석하기</button>
+        <div id="analysisResult" class="analysis hidden"></div>
+      </article>
+
+      <!-- 단계 탭 -->
+      <nav class="tabs">
+        <button class="tab active" data-stage="circle">① 마법진</button>
+        <button class="tab" data-stage="spell">② 주문</button>
+        <button class="tab" data-stage="decorate">③ 꾸미기</button>
+        <button class="tab" data-stage="layout">④ 배치</button>
+      </nav>
+
+      <!-- 단계별 패널 -->
+      <div class="panels">
+        <!-- ① 마법진 -->
+        <div class="panel active" data-panel="circle">
+          <p class="hint">기하 도형으로 마법진의 뼈대를 세우고, 의뢰의 위협에 <b>반대되는 룬</b>을 새기세요.</p>
+          <div class="circle-builder">
+            <div class="palette">
+              <h4>구조 (기하)</h4>
+              <div id="shapePalette" class="chips"></div>
+              <h4>룬 (마법진 언어)</h4>
+              <div id="runePalette" class="chips"></div>
+              <p class="tiny">룬을 고른 뒤 마법진의 빈 자리를 클릭해 새기세요. 룬 두 개를 연결하면 콤보가 됩니다.</p>
+            </div>
+            <div class="circle-stage">
+              <svg id="circleSvg" viewBox="0 0 300 300"></svg>
+              <div class="circle-actions">
+                <button id="linkModeBtn" class="btn ghost small">🔗 연결 모드</button>
+                <button id="clearCircleBtn" class="btn ghost small">🗑 비우기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 주문 -->
+        <div class="panel" data-panel="spell">
+          <p class="hint">단어를 조합해 의뢰에 맞는 주문 문장을 지으세요. 어려운 의뢰일수록 길고 정확한 주문이 필요합니다.</p>
+          <div class="spell-builder">
+            <div class="word-bank" id="wordBank"></div>
+            <div class="spell-compose">
+              <h4>작성 중인 주문</h4>
+              <div id="spellLine" class="spell-line"></div>
+              <button id="clearSpellBtn" class="btn ghost small">지우기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ 꾸미기 -->
+        <div class="panel" data-panel="decorate">
+          <p class="hint">종이와 마법진, 주문을 꾸며 핵심을 강조하세요. 무엇을 강조할지가 점수를 가릅니다.</p>
+          <div class="decorate-grid">
+            <fieldset>
+              <legend>종이 외곽선</legend>
+              <select id="borderStyle">
+                <option value="none">없음</option>
+                <option value="simple">단순한 선</option>
+                <option value="ornate">화려한 장식</option>
+                <option value="rune">룬 테두리</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <legend>마법진 강조</legend>
+              <label>선 굵기 <input type="range" id="circleWidth" min="1" max="6" value="2" /></label>
+              <label>선 색 <input type="color" id="circleColor" value="#caa64a" /></label>
+              <label>채움 <input type="color" id="circleFill" value="#2a1f4a" /></label>
+              <label class="check"><input type="checkbox" id="circleGlow" /> 광휘 효과</label>
+            </fieldset>
+            <fieldset>
+              <legend>주문 강조</legend>
+              <p class="tiny">주문 단어를 클릭해 강조를 토글하세요.</p>
+              <div id="emphasisLine" class="spell-line small"></div>
+              <div class="emph-tools">
+                강조 스타일:
+                <label><input type="radio" name="emph" value="bold" checked /> <b>굵게</b></label>
+                <label><input type="radio" name="emph" value="italic" /> <i>기울임</i></label>
+                <label><input type="radio" name="emph" value="gold" /> <span style="color:#c9a227">금박</span></label>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <!-- ④ 배치 -->
+        <div class="panel" data-panel="layout">
+          <p class="hint">마법진과 주문을 페이지에 배치하고, 의뢰의 성격에 맞춰 무엇을 크게 강조할지 정하세요.</p>
+          <div class="layout-grid">
+            <fieldset>
+              <legend>배치 형태</legend>
+              <select id="layoutTemplate">
+                <option value="circleTop">마법진 위 · 주문 아래</option>
+                <option value="spellTop">주문 위 · 마법진 아래</option>
+                <option value="sideBySide">나란히</option>
+                <option value="circleHero">마법진 중심 (주문 작게)</option>
+                <option value="spellHero">주문 중심 (마법진 작게)</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <legend>핵심 강조</legend>
+              <label><input type="radio" name="focus" value="circle" checked /> 마법진 위주</label>
+              <label><input type="radio" name="focus" value="spell" /> 주문 위주</label>
+              <label><input type="radio" name="focus" value="balanced" /> 균형</label>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 미리보기 + 납품 ============ -->
+    <aside class="preview-pane">
+      <h3>완성된 페이지</h3>
+      <div id="bookPage" class="book-page">
+        <div id="pageCircle" class="page-circle"></div>
+        <div id="pageSpell" class="page-spell"></div>
+      </div>
+      <button id="deliverBtn" class="btn primary big">📦 납품하기</button>
+      <div id="scoreReport" class="score-report hidden"></div>
+    </aside>
+  </main>
+
+  <script>
+/* =========================================================
+   data.js — 게임 데이터 (의뢰, 룬, 도형, 단어, 위협↔상극)
+   ========================================================= */
+
+/* 위협 키워드 → 상극 개념(counter).
+   의뢰 텍스트에서 이 키워드들을 찾아 분석한다. */
+const THREATS = {
+  '독':   { counter: 'purify',  label: '독' },
+  '중독': { counter: 'purify',  label: '독' },
+  '뱀':   { counter: 'tame',    label: '뱀/짐승' },
+  '짐승': { counter: 'tame',    label: '짐승' },
+  '늑대': { counter: 'tame',    label: '짐승' },
+  '산':   { counter: 'earth',   label: '산/자연' },
+  '숲':   { counter: 'earth',   label: '숲/자연' },
+  '불':   { counter: 'water',   label: '불' },
+  '화상': { counter: 'water',   label: '불/화상' },
+  '저주': { counter: 'bless',   label: '저주' },
+  '상처': { counter: 'heal',    label: '상처' },
+  '부상': { counter: 'heal',    label: '부상' },
+  '추위': { counter: 'warmth',  label: '추위' },
+  '동상': { counter: 'warmth',  label: '추위/동상' },
+  '어둠': { counter: 'light',   label: '어둠' },
+  '악몽': { counter: 'light',   label: '어둠/악몽' },
+};
+
+/* 룬: 각 룬은 하나의 counter 개념을 담는다. */
+const RUNES = [
+  { id: 'purify', glyph: '☼', name: '정화의 룬', counter: 'purify' },
+  { id: 'tame',   glyph: '◉', name: '진정의 룬', counter: 'tame'   },
+  { id: 'earth',  glyph: '⛰', name: '대지의 룬', counter: 'earth'  },
+  { id: 'water',  glyph: '≈', name: '물의 룬',   counter: 'water'  },
+  { id: 'bless',  glyph: '✦', name: '축복의 룬', counter: 'bless'  },
+  { id: 'heal',   glyph: '✚', name: '치유의 룬', counter: 'heal'   },
+  { id: 'warmth', glyph: '☀', name: '온기의 룬', counter: 'warmth' },
+  { id: 'light',  glyph: '✸', name: '빛의 룬',   counter: 'light'  },
+];
+
+/* 구조 도형: 마법진의 기하학. 각자 효과(formula)를 가진다. */
+const SHAPES = [
+  { id: 'circle',   glyph: '◯', name: '원 (기반)',   effect: 'containment',
+    desc: '마법진의 기반. 반드시 필요하다.' },
+  { id: 'triangle', glyph: '△', name: '삼각형 (증폭)', effect: 'amplify',
+    desc: '새겨진 룬의 힘을 키운다.' },
+  { id: 'square',   glyph: '□', name: '사각형 (안정)', effect: 'stabilize',
+    desc: '역류를 막아 안정성을 더한다.' },
+];
+
+/* 주문 단어 은행: 범주별. relevant = 어떤 counter/주제에 적합한지. */
+const WORD_BANK = {
+  '대상': [
+    { w: '그대를',   tags: [] },
+    { w: '환자를',   tags: [] },
+    { w: '이 몸을',  tags: [] },
+    { w: '병자를',   tags: [] },
+  ],
+  '행위': [
+    { w: '정화하라', tags: ['purify'] },
+    { w: '치유하라', tags: ['heal'] },
+    { w: '달래라',   tags: ['earth', 'tame'] },
+    { w: '잠재워라', tags: ['tame'] },
+    { w: '몰아내라', tags: ['light', 'bless'] },
+    { w: '식혀라',   tags: ['water'] },
+    { w: '데워라',   tags: ['warmth'] },
+    { w: '봉인하라', tags: ['bless', 'tame'] },
+  ],
+  '표적': [
+    { w: '독을',     tags: ['purify'] },
+    { w: '뱀을',     tags: ['tame'] },
+    { w: '산의 노여움을', tags: ['earth'] },
+    { w: '불길을',   tags: ['water'] },
+    { w: '저주를',   tags: ['bless'] },
+    { w: '상처를',   tags: ['heal'] },
+    { w: '한기를',   tags: ['warmth'] },
+    { w: '어둠을',   tags: ['light'] },
+  ],
+  '어조': [
+    { w: '부드럽게', tags: ['gentle'] },
+    { w: '단호히',   tags: ['strong'] },
+    { w: '영원히',   tags: [] },
+    { w: '즉시',     tags: [] },
+    { w: '자비롭게', tags: ['gentle'] },
+  ],
+};
+
+/* 의뢰 목록. type: scroll(간단) / book(복합).
+   reward 보수, difficulty 난이도(요구 위협 수 = threats 자동). */
+const COMMISSIONS = [
+  {
+    id: 'c1', type: 'scroll', from: '— 시골 약초상',
+    reward: 40,
+    text: '남편이 독에 중독됐어요. 낫게 할 마법서를 만들어 주세요. ' +
+          '최근에 산에 올라갔다가 뱀에 물린 것 같아요. ㅜㅜ',
+  },
+  {
+    id: 'c2', type: 'scroll', from: '— 떠돌이 모험가',
+    reward: 30,
+    text: '동굴에서 불 함정에 당해 화상을 입었소. 시원하게 식혀줄 스크롤이면 충분하오.',
+  },
+  {
+    id: 'c3', type: 'book', from: '— 몰락한 귀족',
+    reward: 90,
+    text: '가문에 대대로 내려오는 저주가 있소. 밤마다 악몽에 시달리고, ' +
+          '겨울이면 온몸이 동상에 걸린 듯 시리오. 이 모든 어둠을 걷어낼 ' +
+          '제대로 된 마법서가 필요하오. 값은 후하게 치르겠소.',
+  },
+  {
+    id: 'c4', type: 'book', from: '— 변경의 사냥꾼',
+    reward: 80,
+    text: '숲의 짐승들이 사나워졌네. 늑대에게 물려 깊은 상처를 입었고, ' +
+          '숲 자체가 우리를 거부하는 듯하이. 짐승을 달래고 상처를 아물게 할 ' +
+          '마법서를 부탁하네.',
+  },
+];
+
+
+/* =========================================================
+   score.js — 의뢰 분석 & 점수 계산 엔진
+   ========================================================= */
+
+/* 의뢰 텍스트에서 위협 키워드를 찾아 분석한다.
+   같은 counter는 한 번만(대표 라벨) 묶는다. */
+function analyzeCommission(commission) {
+  const found = [];
+  const seen = new Set();
+  for (const key of Object.keys(THREATS)) {
+    if (commission.text.includes(key)) {
+      const t = THREATS[key];
+      if (!seen.has(t.counter)) {
+        seen.add(t.counter);
+        found.push({ keyword: key, counter: t.counter, label: t.label });
+      }
+    }
+  }
+  return found;
+}
+
+/* 의뢰 성격에 맞는 추천 강조(focus)를 정한다. */
+function recommendedFocus(commission, threats) {
+  if (threats.length >= 3) return 'circle';   // 위협이 많으면 마법진 위주
+  if (commission.type === 'scroll') return 'spell';
+  return 'balanced';
+}
+
+/* 핵심 채점 함수. state 전체를 받아 보고서를 반환. */
+function scoreCraft(commission, threats, craft) {
+  const breakdown = [];
+  const tips = [];
+  let score = 0;
+
+  const neededCounters = threats.map(t => t.counter);
+  const runeSet = new Set(craft.circle.runes);
+
+  /* ---- 최소 요구사항 ---- */
+  const reqBase = craft.circle.hasBase;
+  const primary = neededCounters[0];
+  const reqPrimary = primary ? runeSet.has(primary) : runeSet.size > 0;
+  const reqSpell = craft.spell.length >= 2;
+
+  const requirementsMet = reqBase && reqPrimary && reqSpell;
+  if (!reqBase) tips.push('마법진에 기반이 되는 원(◯)이 없습니다.');
+  if (!reqPrimary) tips.push('핵심 위협을 막을 상극 룬이 빠졌습니다.');
+  if (!reqSpell) tips.push('주문이 너무 짧습니다. 최소 대상+행위가 필요합니다.');
+
+  /* ---- 위협 대응 (마법진 룬) ---- */
+  let covered = 0;
+  for (const t of threats) {
+    const byRune = runeSet.has(t.counter);
+    const bySpell = craft.spell.some(w => w.tags.includes(t.counter));
+    if (byRune) {
+      covered++;
+      score += 14;
+      if (bySpell) score += 4; // 룬+주문 이중 대응
+    } else if (bySpell) {
+      score += 6;
+      tips.push(`'${t.label}'은(는) 주문으로만 다뤘습니다. 룬으로 새기면 더 강력합니다.`);
+    } else {
+      tips.push(`'${t.label}'에 대한 대응이 없습니다.`);
+    }
+  }
+  breakdown.push({
+    label: `위협 대응 (${covered}/${threats.length} 룬으로 봉합)`,
+    pts: covered * 14,
+  });
+
+  /* ---- 마법진 형식(formula) ---- */
+  let formulaPts = 0;
+  if (craft.circle.shapes.triangle && runeSet.size > 0) {
+    formulaPts += 8; // 증폭
+  }
+  if (craft.circle.shapes.square && runeSet.size > 0) {
+    formulaPts += 6; // 안정
+  }
+  // 콤보: 연결된 두 룬이 모두 필요한 counter일 때
+  let combo = 0;
+  for (const [a, b] of craft.circle.links) {
+    if (neededCounters.includes(a) && neededCounters.includes(b)) combo++;
+  }
+  formulaPts += combo * 7;
+  score += formulaPts;
+  breakdown.push({ label: `마법진 형식 (증폭/안정/콤보 x${combo})`, pts: formulaPts });
+  if (!craft.circle.shapes.triangle && runeSet.size > 0)
+    tips.push('삼각형(△)으로 룬을 증폭하면 효과가 커집니다.');
+
+  /* ---- 주문 적합도 & 길이 ---- */
+  const relevantWords = craft.spell.filter(
+    w => w.tags.some(tag => neededCounters.includes(tag))
+  ).length;
+  let spellPts = relevantWords * 5;
+  const needLen = commission.type === 'book' ? 4 : 2;
+  if (craft.spell.length >= needLen) spellPts += 6;
+  else tips.push(`${commission.type === 'book' ? '마법서' : '스크롤'}에는 ${needLen}단어 이상의 주문이 어울립니다.`);
+  // 어조 적합: 자연/짐승엔 부드럽게, 그 외 단호히
+  const wantsGentle = neededCounters.some(c => c === 'earth' || c === 'tame');
+  const toneOk = craft.spell.some(w =>
+    (wantsGentle && w.tags.includes('gentle')) ||
+    (!wantsGentle && w.tags.includes('strong'))
+  );
+  if (toneOk) spellPts += 5;
+  score += spellPts;
+  breakdown.push({ label: `주문 적합도 (핵심어 ${relevantWords}개)`, pts: spellPts });
+
+  /* ---- 강조 (꾸미기) ---- */
+  let emphPts = 0;
+  const emphasizedRelevant = [...craft.decorate.emphasized].filter(i => {
+    const w = craft.spell[i];
+    return w && w.tags.some(tag => neededCounters.includes(tag));
+  }).length;
+  emphPts += emphasizedRelevant * 4;
+  if (craft.decorate.border !== 'none') emphPts += 3;
+  if (craft.decorate.glow) emphPts += 3;
+  score += emphPts;
+  breakdown.push({ label: `강조 & 꾸미기`, pts: emphPts });
+  if (emphasizedRelevant === 0 && craft.spell.length > 0)
+    tips.push('주문의 핵심 단어를 강조하면 의뢰인이 알아보기 쉽습니다.');
+
+  /* ---- 배치 & 강조 판단 ---- */
+  let layoutPts = 0;
+  const rec = recommendedFocus(commission, threats);
+  if (craft.layout.focus === rec) layoutPts += 8;
+  else if (craft.layout.focus === 'balanced') layoutPts += 4;
+  else tips.push(`이 의뢰는 '${focusLabel(rec)}' 강조가 더 어울립니다.`);
+  score += layoutPts;
+  breakdown.push({ label: `배치 판단`, pts: layoutPts });
+
+  /* ---- 정산 ---- */
+  score = Math.max(0, Math.round(score));
+  const maxScore = estimateMax(commission, threats);
+  const ratio = Math.min(1, score / maxScore);
+  const stars = requirementsMet ? Math.max(1, Math.round(ratio * 5)) : 0;
+  const gold = requirementsMet ? Math.round(commission.reward * (0.5 + 0.5 * ratio)) : 0;
+
+  return { requirementsMet, score, maxScore, ratio, stars, gold, breakdown, tips };
+}
+
+function focusLabel(f) {
+  return f === 'circle' ? '마법진 위주' : f === 'spell' ? '주문 위주' : '균형';
+}
+
+/* 의뢰별 만점 추정(난이도 반영) — 점수 비율 산정용. */
+function estimateMax(commission, threats) {
+  let m = 0;
+  m += threats.length * 18;          // 위협 대응 + 이중
+  m += commission.type === 'book' ? 35 : 20; // 형식+주문+강조 여력
+  m += 16;                            // 배치/강조 여력
+  return m;
+}
+
+
+/* =========================================================
+   app.js — 상태, 렌더링, 상호작용
+   ========================================================= */
+
+const RING = 8;            // 마법진 외곽 노드 수
+const CENTER = { x: 150, y: 150 };
+const RADIUS = 95;
+
+/* ---------------- 상태 ---------------- */
+const state = {
+  commission: null,
+  threats: [],
+  analyzed: false,
+  selectedRune: null,
+  linkMode: false,
+  linkFirst: null,
+  commissionIndex: 0,
+  craft: null,
+};
+
+function freshCraft() {
+  return {
+    circle: {
+      hasBase: false,
+      nodes: new Array(RING + 1).fill(null), // [0]=중심, 1..RING=고리
+      shapes: { triangle: false, square: false },
+      links: [], // [i, j] 노드 인덱스 쌍
+    },
+    spell: [],   // {w, tags, emph}
+    decorate: {
+      border: 'none', circleWidth: 2, circleColor: '#caa64a',
+      circleFill: '#2a1f4a', glow: false, emphStyle: 'bold',
+    },
+    layout: { template: 'circleTop', focus: 'circle' },
+  };
+}
+
+/* 노드 인덱스 → 좌표 */
+function nodePos(i) {
+  if (i === 0) return { ...CENTER };
+  const a = (Math.PI * 2 * (i - 1)) / RING - Math.PI / 2;
+  return { x: CENTER.x + RADIUS * Math.cos(a), y: CENTER.y + RADIUS * Math.sin(a) };
+}
+
+/* ---------------- 초기화 ---------------- */
+function init() {
+  loadCommission(0);
+  buildShapePalette();
+  buildRunePalette();
+  buildWordBank();
+  wireTabs();
+  wireControls();
+  render();
+}
+
+function loadCommission(idx) {
+  state.commissionIndex = idx % COMMISSIONS.length;
+  state.commission = COMMISSIONS[state.commissionIndex];
+  state.threats = [];
+  state.analyzed = false;
+  state.craft = freshCraft();
+  state.selectedRune = null;
+  state.linkMode = false;
+  state.linkFirst = null;
+
+  // 의뢰 카드 표시
+  el('commissionType').textContent = state.commission.type === 'book' ? '마법서' : '스크롤';
+  el('commissionType').className = 'badge ' + state.commission.type;
+  el('commissionFrom').textContent = state.commission.from + ' · 보수 ' + state.commission.reward + '💰';
+  el('commissionText').textContent = state.commission.text;
+  el('analysisResult').classList.add('hidden');
+  el('analysisResult').innerHTML = '';
+  el('scoreReport').classList.add('hidden');
+  // 컨트롤 초기화
+  el('borderStyle').value = 'none';
+  el('circleWidth').value = 2;
+  el('circleColor').value = '#caa64a';
+  el('circleFill').value = '#2a1f4a';
+  el('circleGlow').checked = false;
+  el('layoutTemplate').value = 'circleTop';
+  document.querySelector('input[name="focus"][value="circle"]').checked = true;
+  document.querySelector('input[name="emph"][value="bold"]').checked = true;
+}
+
+/* ---------------- 팔레트 ---------------- */
+function buildShapePalette() {
+  const box = el('shapePalette');
+  box.innerHTML = '';
+  SHAPES.forEach(s => {
+    const chip = document.createElement('button');
+    chip.className = 'chip shape';
+    chip.title = s.desc;
+    chip.innerHTML = `<span class="g">${s.glyph}</span>${s.name}`;
+    chip.onclick = () => toggleShape(s.id);
+    chip.dataset.shape = s.id;
+    box.appendChild(chip);
+  });
+}
+
+function toggleShape(id) {
+  const c = state.craft.circle;
+  if (id === 'circle') c.hasBase = !c.hasBase;
+  else c.shapes[id] = !c.shapes[id];
+  render();
+}
+
+function buildRunePalette() {
+  const box = el('runePalette');
+  box.innerHTML = '';
+  RUNES.forEach(r => {
+    const chip = document.createElement('button');
+    chip.className = 'chip rune';
+    chip.dataset.rune = r.id;
+    chip.innerHTML = `<span class="g">${r.glyph}</span>${r.name}`;
+    chip.onclick = () => {
+      state.selectedRune = state.selectedRune === r.id ? null : r.id;
+      render();
+    };
+    box.appendChild(chip);
+  });
+}
+
+/* ---------------- 단어 은행 / 주문 ---------------- */
+function buildWordBank() {
+  const box = el('wordBank');
+  box.innerHTML = '';
+  Object.entries(WORD_BANK).forEach(([cat, words]) => {
+    const group = document.createElement('div');
+    group.className = 'word-group';
+    group.innerHTML = `<h4>${cat}</h4>`;
+    const chips = document.createElement('div');
+    chips.className = 'chips';
+    words.forEach(word => {
+      const chip = document.createElement('button');
+      chip.className = 'chip word';
+      chip.textContent = word.w;
+      chip.onclick = () => addWord(word);
+      chips.appendChild(chip);
+    });
+    group.appendChild(chips);
+    box.appendChild(group);
+  });
+}
+
+function addWord(word) {
+  state.craft.spell.push({ w: word.w, tags: [...word.tags], emph: false });
+  render();
+}
+
+/* ---------------- 탭 ---------------- */
+function wireTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelector(`.panel[data-panel="${tab.dataset.stage}"]`).classList.add('active');
+    };
+  });
+}
+
+/* ---------------- 컨트롤 와이어링 ---------------- */
+function wireControls() {
+  el('newCommissionBtn').onclick = () => loadAndRender(state.commissionIndex + 1);
+  el('analyzeBtn').onclick = analyze;
+  el('clearCircleBtn').onclick = () => { state.craft.circle = freshCraft().circle; render(); };
+  el('linkModeBtn').onclick = () => {
+    state.linkMode = !state.linkMode; state.linkFirst = null; render();
+  };
+  el('clearSpellBtn').onclick = () => { state.craft.spell = []; render(); };
+
+  el('borderStyle').onchange = e => { state.craft.decorate.border = e.target.value; render(); };
+  el('circleWidth').oninput = e => { state.craft.decorate.circleWidth = +e.target.value; render(); };
+  el('circleColor').oninput = e => { state.craft.decorate.circleColor = e.target.value; render(); };
+  el('circleFill').oninput = e => { state.craft.decorate.circleFill = e.target.value; render(); };
+  el('circleGlow').onchange = e => { state.craft.decorate.glow = e.target.checked; render(); };
+  document.querySelectorAll('input[name="emph"]').forEach(r => {
+    r.onchange = e => { state.craft.decorate.emphStyle = e.target.value; render(); };
+  });
+  el('layoutTemplate').onchange = e => { state.craft.layout.template = e.target.value; render(); };
+  document.querySelectorAll('input[name="focus"]').forEach(r => {
+    r.onchange = e => { state.craft.layout.focus = e.target.value; render(); };
+  });
+  el('deliverBtn').onclick = deliver;
+}
+
+function loadAndRender(idx) { loadCommission(idx); render(); }
+
+function analyze() {
+  state.threats = analyzeCommission(state.commission);
+  state.analyzed = true;
+  const box = el('analysisResult');
+  box.classList.remove('hidden');
+  const rec = recommendedFocus(state.commission, state.threats);
+  const chips = state.threats.map(t => {
+    const rune = RUNES.find(r => r.counter === t.counter);
+    return `<span class="threat-chip">⚠ ${t.label} → 상극: <b>${rune.glyph} ${rune.name}</b></span>`;
+  }).join('');
+  box.innerHTML = `
+    <p><b>발견된 위협 ${state.threats.length}건.</b> 각 위협의 상극 룬으로 마법진을 구성하세요.</p>
+    <div class="threat-list">${chips}</div>
+    <p class="tiny">추천 강조: <b>${focusLabel(rec)}</b> · 주문에서도 표적을 함께 다루면 효과가 배가됩니다.</p>`;
+}
+
+/* ---------------- 마법진 SVG ---------------- */
+function circleSvgMarkup(scale) {
+  const c = state.craft.circle;
+  const d = state.craft.decorate;
+  const glow = d.glow ? `filter="url(#glow)"` : '';
+  let inner = `
+    <defs>
+      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>`;
+
+  if (c.hasBase) {
+    inner += `<circle cx="150" cy="150" r="120" fill="${d.circleFill}"
+      stroke="${d.circleColor}" stroke-width="${d.circleWidth}" ${glow}/>`;
+    inner += `<circle cx="150" cy="150" r="${RADIUS + 18}" fill="none"
+      stroke="${d.circleColor}" stroke-width="${Math.max(1, d.circleWidth - 1)}" opacity="0.6"/>`;
+  } else {
+    inner += `<circle cx="150" cy="150" r="120" fill="#181226" stroke="#3a2f55"
+      stroke-width="1" stroke-dasharray="4 5"/>`;
+  }
+
+  // 삼각형(증폭)
+  if (c.shapes.triangle) {
+    const pts = [0, 1, 2].map(k => {
+      const a = (Math.PI * 2 * k) / 3 - Math.PI / 2;
+      return `${150 + 110 * Math.cos(a)},${150 + 110 * Math.sin(a)}`;
+    }).join(' ');
+    inner += `<polygon points="${pts}" fill="none" stroke="${d.circleColor}"
+      stroke-width="${d.circleWidth}" opacity="0.8" ${glow}/>`;
+  }
+  // 사각형(안정)
+  if (c.shapes.square) {
+    const r = 84;
+    inner += `<rect x="${150 - r}" y="${150 - r}" width="${r * 2}" height="${r * 2}"
+      fill="none" stroke="${d.circleColor}" stroke-width="${d.circleWidth}"
+      opacity="0.7" transform="rotate(45 150 150)" ${glow}/>`;
+  }
+
+  // 연결선
+  c.links.forEach(([i, j]) => {
+    const a = nodePos(i), b = nodePos(j);
+    inner += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"
+      stroke="#e8c75a" stroke-width="1.5" opacity="0.85"/>`;
+  });
+
+  // 노드
+  for (let i = 0; i <= RING; i++) {
+    const p = nodePos(i);
+    const rune = c.nodes[i];
+    const isLinkFirst = state.linkFirst === i;
+    if (rune) {
+      const rdef = RUNES.find(r => r.id === rune);
+      inner += `<g class="node filled" data-node="${i}">
+        <circle cx="${p.x}" cy="${p.y}" r="15"
+          fill="#120d20" stroke="${isLinkFirst ? '#fff' : '#e8c75a'}" stroke-width="2"/>
+        <text x="${p.x}" y="${p.y + 6}" text-anchor="middle"
+          font-size="17" fill="#f0d878">${rdef.glyph}</text></g>`;
+    } else {
+      inner += `<g class="node empty" data-node="${i}">
+        <circle cx="${p.x}" cy="${p.y}" r="13" fill="rgba(255,255,255,0.03)"
+          stroke="#4a3f6a" stroke-width="1" stroke-dasharray="3 3"/></g>`;
+    }
+  }
+  return `<svg viewBox="0 0 300 300" ${scale ? `width="${scale}" height="${scale}"` : ''}>${inner}</svg>`;
+}
+
+function renderCircle() {
+  const host = el('circleSvg').parentElement;
+  // 빌더 SVG 교체
+  const wrap = document.createElement('div');
+  wrap.innerHTML = circleSvgMarkup(null);
+  const svg = wrap.firstElementChild;
+  svg.id = 'circleSvg';
+  el('circleSvg').replaceWith(svg);
+  // 노드 클릭 핸들러
+  svg.querySelectorAll('.node').forEach(g => {
+    g.style.cursor = 'pointer';
+    g.onclick = () => onNodeClick(+g.dataset.node);
+  });
+  // 팔레트 선택 표시
+  document.querySelectorAll('.chip.rune').forEach(ch => {
+    ch.classList.toggle('selected', ch.dataset.rune === state.selectedRune);
+  });
+  document.querySelectorAll('.chip.shape').forEach(ch => {
+    const id = ch.dataset.shape;
+    const on = id === 'circle' ? state.craft.circle.hasBase : state.craft.circle.shapes[id];
+    ch.classList.toggle('selected', on);
+  });
+  el('linkModeBtn').classList.toggle('active', state.linkMode);
+}
+
+function onNodeClick(i) {
+  const c = state.craft.circle;
+  if (state.linkMode) {
+    if (!c.nodes[i]) return; // 빈 노드는 연결 불가
+    if (state.linkFirst === null) { state.linkFirst = i; }
+    else if (state.linkFirst === i) { state.linkFirst = null; }
+    else {
+      const pair = [state.linkFirst, i].sort((a, b) => a - b);
+      const exists = c.links.some(l => l[0] === pair[0] && l[1] === pair[1]);
+      if (!exists) c.links.push(pair);
+      state.linkFirst = null;
+    }
+    render();
+    return;
+  }
+  // 일반 모드: 룬 배치 / 제거
+  if (c.nodes[i]) {
+    c.nodes[i] = null;
+    c.links = c.links.filter(l => l[0] !== i && l[1] !== i);
+  } else if (state.selectedRune) {
+    c.nodes[i] = state.selectedRune;
+  }
+  render();
+}
+
+/* ---------------- 주문 렌더 ---------------- */
+function renderSpell() {
+  const line = el('spellLine');
+  const emph = el('emphasisLine');
+  line.innerHTML = '';
+  emph.innerHTML = '';
+  if (state.craft.spell.length === 0) {
+    line.innerHTML = '<span class="placeholder">아래 단어를 골라 주문을 지으세요…</span>';
+    emph.innerHTML = '<span class="placeholder">주문을 먼저 작성하세요.</span>';
+  }
+  state.craft.spell.forEach((word, i) => {
+    // 작성 패널: 클릭 시 제거
+    const t = document.createElement('span');
+    t.className = 'word-token';
+    t.textContent = word.w;
+    t.title = '클릭하여 제거';
+    t.onclick = () => { state.craft.spell.splice(i, 1); render(); };
+    line.appendChild(t);
+
+    // 강조 패널: 클릭 시 강조 토글
+    const e = document.createElement('span');
+    e.className = 'word-token' + (word.emph ? ' emph-' + state.craft.decorate.emphStyle : '');
+    e.textContent = word.w;
+    e.title = '클릭하여 강조 토글';
+    e.onclick = () => { word.emph = !word.emph; render(); };
+    emph.appendChild(e);
+  });
+}
+
+/* ---------------- 미리보기 페이지 ---------------- */
+function renderPreview() {
+  const page = el('bookPage');
+  const d = state.craft.decorate;
+  const lay = state.craft.layout;
+  page.className = 'book-page border-' + d.border +
+    ' tmpl-' + lay.template + ' focus-' + lay.focus;
+
+  el('pageCircle').innerHTML = circleSvgMarkup(null);
+
+  const sp = el('pageSpell');
+  sp.innerHTML = '';
+  if (state.craft.spell.length === 0) {
+    sp.innerHTML = '<span class="placeholder">주문 없음</span>';
+  } else {
+    state.craft.spell.forEach(word => {
+      const s = document.createElement('span');
+      s.className = 'pw' + (word.emph ? ' emph-' + d.emphStyle : '');
+      s.textContent = word.w + ' ';
+      sp.appendChild(s);
+    });
+  }
+}
+
+/* ---------------- 납품 / 채점 ---------------- */
+function buildSnapshot() {
+  const c = state.craft.circle;
+  const runes = c.nodes.filter(Boolean); // counter id == rune id
+  const links = c.links.map(([i, j]) => [c.nodes[i], c.nodes[j]]);
+  const emphasized = new Set(
+    state.craft.spell.map((w, i) => (w.emph ? i : -1)).filter(i => i >= 0)
+  );
+  return {
+    circle: { hasBase: c.hasBase, runes, shapes: c.shapes, links },
+    spell: state.craft.spell,
+    decorate: { ...state.craft.decorate, emphasized },
+    layout: state.craft.layout,
+  };
+}
+
+function deliver() {
+  if (!state.analyzed) {
+    state.threats = analyzeCommission(state.commission);
+    state.analyzed = true;
+    analyze();
+  }
+  const snap = buildSnapshot();
+  const r = scoreCraft(state.commission, state.threats, snap);
+  const box = el('scoreReport');
+  box.classList.remove('hidden');
+
+  const starStr = r.requirementsMet
+    ? '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars)
+    : '실패';
+  const head = r.requirementsMet
+    ? `<div class="verdict ok">납품 성공! ${starStr}</div>`
+    : `<div class="verdict fail">최소 요구 미달 — 반려되었습니다</div>`;
+
+  const rows = r.breakdown.map(b =>
+    `<div class="brow"><span>${b.label}</span><span>${b.pts > 0 ? '+' : ''}${b.pts}</span></div>`
+  ).join('');
+  const tipsHtml = r.tips.length
+    ? `<div class="tips"><b>개선 힌트</b><ul>${r.tips.map(t => `<li>${t}</li>`).join('')}</ul></div>`
+    : '';
+
+  box.innerHTML = `
+    ${head}
+    <div class="score-num">점수 ${r.score} / ${r.maxScore}</div>
+    <div class="breakdown">${rows}</div>
+    ${r.requirementsMet ? `<div class="reward">보수 +${r.gold}💰</div>` : ''}
+    ${tipsHtml}
+    ${r.requirementsMet ? `<button class="btn primary" onclick="loadAndRender(state.commissionIndex+1)">다음 의뢰 →</button>` : ''}
+  `;
+
+  if (r.requirementsMet) {
+    const g = el('gold');
+    g.textContent = (+g.textContent) + r.gold;
+  }
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ---------------- 전체 렌더 ---------------- */
+function render() {
+  renderCircle();
+  renderSpell();
+  renderPreview();
+}
+
+function el(id) { return document.getElementById(id); }
+window.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
