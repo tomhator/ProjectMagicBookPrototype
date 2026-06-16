@@ -26,11 +26,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Pages가 비활성 상태면 자동으로 활성화(enablement: true)
+      # Pages는 저장소 Settings에서 1회 활성화 필요(소스: GitHub Actions).
+      # 활성화 후에는 푸시마다 이 단계가 기존 Pages 설정을 읽어 배포한다.
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       # 저장소 루트 전체를 사이트 산출물로 업로드 (index.html이 진입점)
       - name: Upload artifact
