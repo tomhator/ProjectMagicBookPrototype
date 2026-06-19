@@ -267,15 +267,17 @@ function selectCustomer(id){
   const c=state.customers.find(x=>x.id===id); if(!c) return;
   const has=state.blueprints[c.type];
   const tags=c.threats.map(t=>elTagHtml(t,'위협')).join('');
-  let action;
+  // 직접 제작 버튼은 항상 제공 (청사진이 잘못됐을 때 새로 만들 수 있도록)
+  const craftLabel = has ? '🔨 직접 다시 만들기 (청사진 갱신)' : '🔨 직접 제작하기';
+  let action = `<button class="btn primary big" onclick="startCraft(${c.id})">${craftLabel}</button>`;
   if(has){
     const cost=Math.round(TIER[c.tier].reward*0.25);
     const profit=Math.round(TIER[c.tier].reward*has.quality)-cost;
-    action=`<p class="tiny">이 유형의 청사진이 있습니다 (품질 ${Math.round(has.quality*100)}%).</p>
-      <button class="btn gold big" onclick="printDeliver(${c.id})">🖨 프린터로 제작 (-${cost}💰 → 예상 +${profit}💰)</button>`;
+    action = `<p class="tiny">이 유형의 청사진이 있습니다 (품질 ${Math.round(has.quality*100)}%). 품질이 낮으면 직접 다시 만들어 갱신하세요.</p>
+      <button class="btn gold big" onclick="printDeliver(${c.id})">🖨 프린터로 제작 (-${cost}💰 → 예상 +${profit}💰)</button>
+      <button class="btn big" style="margin-top:6px;" onclick="startCraft(${c.id})">${craftLabel}</button>`;
   }else{
-    action=`<p class="tiny">처음 보는 유형입니다. 직접 제작해 청사진을 만드세요.</p>
-      <button class="btn primary big" onclick="startCraft(${c.id})">🔨 직접 제작하기</button>`;
+    action = `<p class="tiny">처음 보는 유형입니다. 직접 제작해 청사진을 만드세요.</p>` + action;
   }
   $('dealCard').style.display='block';
   $('dealCard').innerHTML=`<div style="display:flex;gap:10px;align-items:center;">
