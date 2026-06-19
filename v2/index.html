@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>마법서 공방 v2 — 오행 프로토타입</title>
+<style>
+/* ===================== 테마 ===================== */
+:root{
+  --bg:#0f0b1a; --panel:#1a1430; --panel2:#221a3d; --ink:#e8e2f5; --muted:#9a8fc0;
+  --gold:#e8c75a; --accent:#8a6fff; --line:#352a52; --ok:#5ad08a; --fail:#ff7a8a;
+  --wood:#5cc46a; --fire:#ef5350; --earth:#c8a06a; --metal:#f2d65a; --water:#4aa3f0;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  background:radial-gradient(1200px 600px at 70% -10%,#251a45,var(--bg));color:var(--ink);min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;
+  border-bottom:1px solid var(--line);background:rgba(20,14,40,.6);position:sticky;top:0;z-index:20;}
+.topbar h1{font-size:18px;margin:0;}
+.topbar .sub{font-size:11px;color:var(--muted);font-weight:400;}
+.stats{display:flex;gap:16px;align-items:center;font-weight:700;}
+.stats .gold{color:var(--gold);} .stats .bp{color:var(--accent);}
+.tabbar{display:flex;gap:8px;padding:10px 20px 0;}
+.tabbar button{flex:0 0 auto;padding:10px 22px;border:1px solid var(--line);background:var(--panel);
+  color:var(--muted);border-radius:10px 10px 0 0;cursor:pointer;font-size:15px;font-weight:700;}
+.tabbar button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.screen{display:none;padding:16px 20px 40px;} .screen.active{display:block;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:9px 16px;
+  border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:.12s;}
+.btn:hover{border-color:var(--accent);} .btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#2a1f00;}
+.btn.big{padding:13px 18px;font-size:16px;width:100%;}
+.btn.small{padding:6px 11px;font-size:13px;}
+.hint{color:var(--muted);font-size:13px;line-height:1.6;}
+.tiny{font-size:12px;color:var(--muted);}
+.badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--accent);color:#fff;}
+.badge.t1{background:#4a8;} .badge.t2{background:var(--accent);} .badge.t3{background:var(--gold);color:#2a1f00;}
+
+/* ===================== 판매 화면 ===================== */
+.counter{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0;}
+.npc{width:160px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;
+  cursor:pointer;text-align:center;transition:.15s;position:relative;}
+.npc:hover{transform:translateY(-3px);border-color:var(--accent);}
+.npc.selected{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset;}
+.npc .face{font-size:46px;line-height:1;}
+.npc .name{font-weight:700;margin:6px 0 2px;}
+.npc .bubble{font-size:12px;color:var(--muted);background:var(--panel2);border-radius:8px;padding:6px;margin-top:8px;min-height:48px;}
+.npc .bp-flag{position:absolute;top:8px;right:8px;font-size:14px;}
+.empty-counter{color:var(--muted);font-style:italic;padding:30px;text-align:center;width:100%;}
+.deal{margin-top:8px;}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+.el-tag{font-size:13px;font-weight:700;padding:3px 10px;border-radius:8px;border:1px solid;}
+
+/* ===================== 제작 화면 ===================== */
+.craft-layout{display:grid;grid-template-columns:300px 1fr 280px;gap:16px;align-items:start;}
+@media(max-width:1100px){.craft-layout{grid-template-columns:1fr;}}
+.craft-canvas-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+#craftSvg{width:380px;height:380px;max-width:100%;background:radial-gradient(circle,#191230,#0c0a16);
+  border-radius:16px;border:1px solid var(--line);}
+.wheel-wrap{display:flex;flex-direction:column;align-items:center;}
+#wheelSvg{width:240px;height:240px;}
+.legend{display:flex;gap:12px;font-size:12px;margin-top:4px;}
+.legend .gen{color:var(--ok);} .legend .ko{color:var(--fail);}
+.guide{margin-top:10px;font-size:13px;line-height:1.7;}
+.guide .row{padding:5px 8px;background:var(--panel2);border-radius:8px;margin:4px 0;}
+.palette-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
+.el-btn{flex:1;min-width:48px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;transition:.12s;}
+.el-btn:hover{transform:translateY(-2px);} .el-btn .g{font-size:20px;font-weight:800;display:block;}
+.el-btn .n{font-size:11px;color:var(--muted);}
+.shape-list{display:flex;flex-direction:column;gap:6px;margin:8px 0;}
+.shape-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);
+  border-radius:9px;background:var(--panel2);cursor:pointer;font-size:13px;}
+.shape-item.active{border-color:var(--gold);background:rgba(232,199,90,.12);}
+.shape-item .x{margin-left:auto;color:var(--fail);cursor:pointer;font-weight:800;}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;}
+.score-box{margin-top:10px;padding:10px;border-radius:10px;background:var(--panel2);}
+.qbar{height:10px;border-radius:6px;background:#15102a;overflow:hidden;margin:6px 0;}
+.qbar>div{height:100%;background:linear-gradient(90deg,var(--fail),var(--gold),var(--ok));}
+h4{margin:10px 0 4px;font-size:13px;color:var(--muted);}
+.modal{position:fixed;inset:0;background:rgba(8,5,16,.7);display:none;align-items:center;justify-content:center;z-index:50;}
+.modal.show{display:flex;} .modal .inner{max-width:440px;width:90%;}
+.result-stars{font-size:26px;color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>📖 마법서 공방 <span class="sub">v2 · 오행</span></h1>
+  <div class="stats">
+    <span class="gold">💰 <span id="gold">120</span></span>
+    <span class="bp">📐 청사진 <span id="bpCount">0</span></span>
+    <span class="tiny">납품 <span id="delivered">0</span></span>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button id="tabSell" class="active" onclick="switchScreen('sell')">🛒 판매</button>
+  <button id="tabCraft" onclick="switchScreen('craft')">🔨 제작</button>
+</div>
+
+<!-- ===================== 판매 화면 ===================== -->
+<section id="screenSell" class="screen active">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><b>공방 카운터</b> <span class="tiny">— 손님의 의뢰를 클릭하세요. 청사진(📐)이 있으면 프린터로 즉시 제작됩니다.</span></div>
+      <button class="btn primary" onclick="spawnCustomer()">🔔 손님 받기</button>
+    </div>
+    <div id="counter" class="counter"></div>
+  </div>
+  <div id="dealCard" class="card deal" style="display:none;"></div>
+</section>
+
+<!-- ===================== 제작 화면 ===================== -->
+<section id="screenCraft" class="screen">
+  <div id="craftEmpty" class="card hint">판매 화면에서 <b>직접 제작이 필요한 의뢰</b>를 선택하면 여기서 마법서를 만듭니다.</div>
+  <div id="craftMain" class="craft-layout" style="display:none;">
+    <!-- 좌: 의뢰 + 오행 바퀴 + 가이드 -->
+    <div class="card">
+      <div style="display:flex;gap:8px;align-items:center;"><span id="cComTier" class="badge"></span><b id="cComNpc"></b></div>
+      <p id="cComText" class="hint" style="margin:8px 0;"></p>
+      <div id="cComTags" class="tags"></div>
+      <div class="wheel-wrap">
+        <svg id="wheelSvg" viewBox="0 0 240 240"></svg>
+        <div class="legend"><span class="gen">➜ 상생(룬)</span><span class="ko">★ 상극(도형)</span></div>
+      </div>
+      <div id="guide" class="guide"></div>
+    </div>
+    <!-- 중: 마법진 캔버스 -->
+    <div class="craft-canvas-wrap">
+      <svg id="craftSvg" viewBox="0 0 360 360"></svg>
+      <div class="tiny">중심에서 바깥으로 도형이 겹겹이 쌓입니다 · 활성 도형(노란 테두리)에 룬이 붙습니다</div>
+    </div>
+    <!-- 우: 컨트롤 -->
+    <div class="card">
+      <h4>① 도형 추가 (상극 · 최대 5)</h4>
+      <div id="shapePalette" class="palette-row"></div>
+      <div id="shapeList" class="shape-list"></div>
+
+      <h4>② 룬 추가 (상생 · 활성 도형당 최대 5칸)</h4>
+      <div id="runePalette" class="palette-row"></div>
+      <label class="toggle"><input type="checkbox" id="comboToggle" /> 🔗 조합 모드 (마지막 칸에 2번째 룬 부착)</label>
+
+      <div class="score-box">
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span>예상 품질</span><span id="qNum">0%</span>
+        </div>
+        <div class="qbar"><div id="qBar" style="width:0%"></div></div>
+        <div id="qNote" class="tiny"></div>
+      </div>
+      <button id="finishBtn" class="btn gold big" style="margin-top:10px;" onclick="finishCraft()">✅ 제작 완료 · 청사진 등록</button>
+      <button class="btn small" style="margin-top:6px;" onclick="resetCraft()">초기화</button>
+    </div>
+  </div>
+</section>
+
+<!-- 결과 모달 -->
+<div id="modal" class="modal"><div class="inner card" id="modalInner"></div></div>
+
+<script>
+/* ============================================================
+   오행 데이터.  상생 순서 인덱스: 목0 화1 토2 금3 수4
+   상생(生): i → (i+1)%5   |   상극(剋): i → (i+2)%5
+   위협 T의 상극 도형 = (T+3)%5  /  도형 E의 상생 룬 = (E+4)%5
+   ============================================================ */
+const ELEMENTS = [
+  { ko:'목', han:'木', geo:'rect',     color:'var(--wood)',  raw:'#5cc46a' },
+  { ko:'화', han:'火', geo:'triangle', color:'var(--fire)',  raw:'#ef5350' },
+  { ko:'토', han:'土', geo:'square',   color:'var(--earth)', raw:'#c8a06a' },
+  { ko:'금', han:'金', geo:'circle',   color:'var(--metal)', raw:'#f2d65a' },
+  { ko:'수', han:'水', geo:'diamond',  color:'var(--water)', raw:'#4aa3f0' },
+];
+const overcomeCounter = T => (T+3)%5;   // 위협을 제압하는 도형 원소
+const generateRune    = E => (E+4)%5;   // 도형을 키우는 룬 원소
+const elName = i => ELEMENTS[i].ko + '(' + ELEMENTS[i].han + ')';
+
+/* 난이도별 요구치 */
+const TIER = {
+  1:{ shapes:1, runes:1, reward:35, label:'스크롤' },
+  2:{ shapes:2, runes:2, reward:80, label:'마법서' },
+  3:{ shapes:3, runes:2, reward:160, label:'대마법서' },
+};
+
+/* NPC 풀 (문구는 짧게!) */
+const NPCS = [
+  { face:'🧑‍🌾', name:'약초상 마리' },
+  { face:'🧔', name:'사냥꾼 그롬' },
+  { face:'👩‍🦰', name:'귀부인 셀라' },
+  { face:'🧙', name:'노현자 펜' },
+  { face:'🧝', name:'음유시인 리아' },
+  { face:'👨‍🍳', name:'주방장 보르' },
+];
+/* 의뢰 템플릿: threats 는 원소 인덱스. tier 로 요구치 결정 */
+const COMM_TEMPLATES = [
+  { tier:1, threats:[1], text:'불에 데었어요. 화기를 식혀줄 스크롤요.' },          // 화 → 수
+  { tier:1, threats:[4], text:'몸이 너무 차요. 한기를 잡아주세요.' },              // 수 → 토
+  { tier:1, threats:[0], text:'독초에 쏘였소. 뻗치는 기운을 베어주오.' },          // 목 → 금
+  { tier:1, threats:[2], text:'땅 기운에 짓눌렸소. 풀어주시오.' },                // 토 → 목
+  { tier:1, threats:[3], text:'쇠붙이 저주에 베였어요.' },                        // 금 → 화
+  { tier:2, threats:[1,4], text:'고열과 오한이 번갈아 와요. 둘 다 잡아주세요.' },  // 화,수
+  { tier:2, threats:[0,2], text:'독과 탁한 땅기운이 겹쳤소.' },                   // 목,토
+  { tier:2, threats:[3,1], text:'칼에 베이고 불에 그을렸네.' },                   // 금,화
+  { tier:3, threats:[1,4,0], text:'열·한기·독이 한꺼번에. 대마법서가 필요하오.' },// 화,수,목
+  { tier:3, threats:[2,3,4], text:'땅·쇠·물의 삼중 저주를 풀어주오.' },          // 토,금,수
+];
+
+/* ============================================================ 상태 */
+let state = {
+  gold:120, delivered:0,
+  blueprints:{},          // type -> { quality, reward }
+  customers:[],           // 대기 손님
+  selectedCustomer:null,
+  craft:null,             // 진행 중 제작 { commission, shapes:[{el,runes:[[..]]}], active }
+};
+let nextId = 1;
+
+/* ============================================================ 유틸 */
+const $ = id => document.getElementById(id);
+function comTypeKey(c){ return 't'+c.tier+'_'+[...c.threats].sort().join('-'); }
+function makeCommission(tpl){
+  const npc = NPCS[Math.floor(Math.random()*NPCS.length)];
+  const c = { id:nextId++, tier:tpl.tier, threats:tpl.threats.slice(), text:tpl.text,
+              npc:npc.name, face:npc.face };
+  c.type = comTypeKey(c);
+  return c;
+}
+
+/* ============================================================ 화면 전환 */
+function switchScreen(s){
+  $('tabSell').classList.toggle('active', s==='sell');
+  $('tabCraft').classList.toggle('active', s==='craft');
+  $('screenSell').classList.toggle('active', s==='sell');
+  $('screenCraft').classList.toggle('active', s==='craft');
+}
+
+/* ============================================================ 판매 화면 */
+function spawnCustomer(){
+  if(state.customers.length>=4){ return; }
+  // 초반엔 tier1 위주, 납품할수록 상위 등장
+  const pool = COMM_TEMPLATES.filter(t => t.tier===1 ||
+      (t.tier===2 && state.delivered>=2) || (t.tier===3 && state.delivered>=5));
+  const tpl = pool[Math.floor(Math.random()*pool.length)];
+  state.customers.push(makeCommission(tpl));
+  renderCounter();
+}
+function renderCounter(){
+  const box = $('counter'); box.innerHTML='';
+  if(state.customers.length===0){
+    box.innerHTML='<div class="empty-counter">손님이 없습니다. <b>🔔 손님 받기</b>를 눌러보세요.</div>';
+    return;
+  }
+  state.customers.forEach(c=>{
+    const has = !!state.blueprints[c.type];
+    const d=document.createElement('div');
+    d.className='npc'+(state.selectedCustomer===c.id?' selected':'');
+    d.onclick=()=>selectCustomer(c.id);
+    d.innerHTML=`<div class="bp-flag">${has?'📐':'🆕'}</div>
+      <div class="face">${c.face}</div><div class="name">${c.name}</div>
+      <span class="badge t${c.tier}">${TIER[c.tier].label}</span>
+      <div class="bubble">${c.text}</div>`;
+    box.appendChild(d);
+  });
+}
+function selectCustomer(id){
+  state.selectedCustomer=id; renderCounter();
+  const c=state.customers.find(x=>x.id===id); if(!c) return;
+  const has=state.blueprints[c.type];
+  const tags=c.threats.map(t=>elTagHtml(t,'위협')).join('');
+  let action;
+  if(has){
+    const cost=Math.round(TIER[c.tier].reward*0.25);
+    const profit=Math.round(TIER[c.tier].reward*has.quality)-cost;
+    action=`<p class="tiny">이 유형의 청사진이 있습니다 (품질 ${Math.round(has.quality*100)}%).</p>
+      <button class="btn gold big" onclick="printDeliver(${c.id})">🖨 프린터로 제작 (-${cost}💰 → 예상 +${profit}💰)</button>`;
+  }else{
+    action=`<p class="tiny">처음 보는 유형입니다. 직접 제작해 청사진을 만드세요.</p>
+      <button class="btn primary big" onclick="startCraft(${c.id})">🔨 직접 제작하기</button>`;
+  }
+  $('dealCard').style.display='block';
+  $('dealCard').innerHTML=`<div style="display:flex;gap:10px;align-items:center;">
+      <span class="face" style="font-size:34px;">${c.face}</span>
+      <div><b>${c.name}</b> · <span class="badge t${c.tier}">${TIER[c.tier].label}</span><br>
+      <span class="hint">${c.text}</span></div></div>
+    <div class="tags">${tags}</div>${action}`;
+}
+function elTagHtml(i,prefix){
+  const e=ELEMENTS[i];
+  return `<span class="el-tag" style="color:${e.color};border-color:${e.color};">${prefix?prefix+' ':''}${e.ko}${e.han}</span>`;
+}
+function printDeliver(id){
+  const c=state.customers.find(x=>x.id===id); if(!c) return;
+  const bp=state.blueprints[c.type]; const cost=Math.round(TIER[c.tier].reward*0.25);
+  if(state.gold<cost){ alert('골드가 부족합니다.'); return; }
+  const profit=Math.round(TIER[c.tier].reward*bp.quality);
+  state.gold += profit-cost; state.delivered++;
+  removeCustomer(id);
+  renderAll();
+  showResult(`🖨 프린터 납품 완료`, c, bp.quality, profit-cost, true);
+}
+function removeCustomer(id){
+  state.customers=state.customers.filter(x=>x.id!==id);
+  if(state.selectedCustomer===id){ state.selectedCustomer=null; $('dealCard').style.display='none'; }
+}
+
+/* ============================================================ 제작 시작 */
+function startCraft(id){
+  const c=state.customers.find(x=>x.id===id); if(!c) return;
+  state.craft={ commission:c, shapes:[], active:-1 };
+  $('craftEmpty').style.display='none'; $('craftMain').style.display='grid';
+  switchScreen('craft');
+  buildPalettes(); renderCraft();
+}
+function buildPalettes(){
+  const mk=(box,onclick)=>{ box.innerHTML='';
+    ELEMENTS.forEach((e,i)=>{ const b=document.createElement('button');
+      b.className='el-btn'; b.onclick=()=>onclick(i);
+      b.innerHTML=`<span class="g" style="color:${e.color}">${e.han}</span><span class="n">${e.ko}</span>`;
+      box.appendChild(b); }); };
+  mk($('shapePalette'), addShape);
+  mk($('runePalette'), addRune);
+}
+function addShape(el){
+  const cr=state.craft; if(cr.shapes.length>=5) return;
+  cr.shapes.push({ el, runes:[] }); cr.active=cr.shapes.length-1; renderCraft();
+}
+function addRune(el){
+  const cr=state.craft; if(cr.active<0){ return; }
+  const sh=cr.shapes[cr.active];
+  if($('comboToggle').checked && sh.runes.length>0 && sh.runes[sh.runes.length-1].length<2){
+    sh.runes[sh.runes.length-1].push(el);      // 마지막 칸에 2번째 룬 부착
+  }else{
+    if(sh.runes.length<5) sh.runes.push([el]); // 새 룬 칸
+  }
+  renderCraft();
+}
+function selectShape(i){ state.craft.active=i; renderCraft(); }
+function removeShape(i,ev){ ev.stopPropagation();
+  state.craft.shapes.splice(i,1);
+  state.craft.active=Math.min(state.craft.active,state.craft.shapes.length-1);
+  renderCraft();
+}
+function resetCraft(){ state.craft.shapes=[]; state.craft.active=-1; renderCraft(); }
+
+/* ============================================================ 채점 */
+function scoreCraft(){
+  const cr=state.craft, c=cr.commission, req=TIER[c.tier];
+  let score=0,max=0; const notes=[];
+  // 도형(상극) 채점: 각 위협마다 (T+3)%5 도형 필요
+  c.threats.forEach(T=>{
+    const need=overcomeCounter(T); max+=30;
+    if(cr.shapes.some(s=>s.el===need)) score+=30;
+    else notes.push(`위협 ${elName(T)} → 도형 ${elName(need)} 필요`);
+  });
+  // 룬(상생) 채점: 각 도형마다 (E+4)%5 룬, 요구 개수만큼
+  cr.shapes.forEach(s=>{
+    const need=generateRune(s.el); const r=req.runes; max+=r*12;
+    let good=0,combo=0;
+    s.runes.forEach(slot=>{
+      if(slot.includes(need)) good++;
+      if(slot.length===2 && slot.includes(need) && slot.includes(s.el)) combo++; // 상생+자기강화 콤보
+    });
+    score+=Math.min(good,r)*12 + combo*6;
+    max+=r*0; // combo는 보너스(분모 제외)
+  });
+  // 과부족 패널티(약): 요구보다 도형이 많으면 약간 감점
+  if(cr.shapes.length>req.shapes) score-=(cr.shapes.length-req.shapes)*5;
+  score=Math.max(0,score);
+  const quality=max>0?Math.min(1,score/max):0;
+  return { quality, notes, ok:notes.length===0 && cr.shapes.length>0 };
+}
+
+/* ============================================================ 제작 완료 */
+function finishCraft(){
+  const cr=state.craft, c=cr.commission;
+  const r=scoreCraft();
+  if(cr.shapes.length===0){ alert('도형을 하나 이상 배치하세요.'); return; }
+  // 청사진 등록(더 높은 품질이면 갱신)
+  const prev=state.blueprints[c.type];
+  if(!prev || r.quality>prev.quality) state.blueprints[c.type]={ quality:r.quality, reward:TIER[c.tier].reward };
+  const reward=Math.round(TIER[c.tier].reward*r.quality);
+  state.gold+=reward; state.delivered++;
+  removeCustomer(c.id);
+  state.craft=null; $('craftMain').style.display='none'; $('craftEmpty').style.display='block';
+  renderAll(); switchScreen('sell');
+  showResult('🔨 직접 제작 납품 + 청사진 등록!', c, r.quality, reward, false);
+}
+
+function showResult(title,c,quality,gold,printed){
+  const stars=Math.max(1,Math.round(quality*5));
+  $('modalInner').innerHTML=`<h3 style="margin:0 0 6px;">${title}</h3>
+    <div class="hint">${c.face} ${c.npc} · ${TIER[c.tier].label}</div>
+    <div class="result-stars" style="margin:10px 0;">${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</div>
+    <div>품질 <b>${Math.round(quality*100)}%</b> · 수익 <b style="color:var(--gold)">+${gold}💰</b></div>
+    ${printed?'<p class="tiny">청사진으로 자동 제작했습니다.</p>'
+             :'<p class="tiny">이제 같은 유형 의뢰는 프린터로 즉시 제작할 수 있습니다.</p>'}
+    <button class="btn primary big" style="margin-top:12px;" onclick="closeModal()">확인</button>`;
+  $('modal').classList.add('show');
+}
+function closeModal(){ $('modal').classList.remove('show'); }
+
+/* ============================================================ 오행 바퀴 렌더 */
+function wheelNodePos(i,r){ const a=(-90+i*72)*Math.PI/180; return {x:120+r*Math.cos(a),y:120+r*Math.sin(a)}; }
+function renderWheel(){
+  const cr=state.craft; const threats=cr?cr.commission.threats:[];
+  const counters=threats.map(overcomeCounter);
+  let s='';
+  // 상생 외곽 호살표 (i -> i+1)
+  for(let i=0;i<5;i++){
+    const p1=wheelNodePos(i,82), p2=wheelNodePos((i+1)%5,82);
+    s+=`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="var(--ok)" stroke-width="2" opacity="0.45"/>`;
+  }
+  // 상극 펜타그램 (i -> i+2)
+  for(let i=0;i<5;i++){
+    const p1=wheelNodePos(i,70), p2=wheelNodePos((i+2)%5,70);
+    s+=`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="var(--fail)" stroke-width="1.4" opacity="0.35"/>`;
+  }
+  // 노드
+  ELEMENTS.forEach((e,i)=>{
+    const p=wheelNodePos(i,82);
+    const isThreat=threats.includes(i), isCounter=counters.includes(i);
+    const ring=isThreat?'stroke="var(--fail)" stroke-width="4"':isCounter?'stroke="var(--gold)" stroke-width="4"':'stroke="'+e.color+'" stroke-width="2"';
+    s+=`<circle cx="${p.x}" cy="${p.y}" r="20" fill="#15102a" ${ring}/>
+        <text x="${p.x}" y="${p.y+6}" text-anchor="middle" font-size="18" font-weight="800" fill="${e.color}">${e.han}</text>`;
+    if(isThreat) s+=`<text x="${p.x}" y="${p.y-26}" text-anchor="middle" font-size="10" fill="var(--fail)">위협</text>`;
+    else if(isCounter) s+=`<text x="${p.x}" y="${p.y-26}" text-anchor="middle" font-size="10" fill="var(--gold)">도형</text>`;
+  });
+  $('wheelSvg').innerHTML=s;
+}
+
+/* ============================================================ 마법진 캔버스 렌더 */
+function shapePath(geo,cx,cy,r,color,w,active){
+  const op=active?1:0.55; const sw=active?w+1:w;
+  switch(geo){
+    case 'circle': return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`;
+    case 'square': return `<rect x="${cx-r}" y="${cy-r}" width="${r*2}" height="${r*2}" fill="none" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`;
+    case 'diamond': return `<polygon points="${cx},${cy-r} ${cx+r},${cy} ${cx},${cy+r} ${cx-r},${cy}" fill="none" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`;
+    case 'triangle': return `<polygon points="${cx},${cy-r} ${cx+r*0.87},${cy+r*0.5} ${cx-r*0.87},${cy+r*0.5}" fill="none" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`;
+    case 'rect': { const w2=r*0.95,h2=r*1.45; return `<rect x="${cx-w2}" y="${cy-h2}" width="${w2*2}" height="${h2*2}" fill="none" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`; }
+  }
+  return '';
+}
+function renderCraft(){
+  const cr=state.craft; if(!cr) return;
+  const c=cr.commission;
+  // 좌측 의뢰 정보
+  $('cComTier').className='badge t'+c.tier; $('cComTier').textContent=TIER[c.tier].label;
+  $('cComNpc').textContent=c.face+' '+c.npc;
+  $('cComText').textContent=c.text;
+  $('cComTags').innerHTML=c.threats.map(t=>elTagHtml(t,'위협')).join('');
+  // 가이드
+  const req=TIER[c.tier];
+  let g=`<div class="row">이 의뢰엔 <b>도형 ${req.shapes}개 · 칸당 룬 ${req.runes}개</b>가 적정합니다.</div>`;
+  c.threats.forEach(T=>{ const sc=overcomeCounter(T), ru=generateRune(sc);
+    g+=`<div class="row">위협 <b style="color:${ELEMENTS[T].color}">${elName(T)}</b> → 상극 도형 <b style="color:${ELEMENTS[sc].color}">${elName(sc)}</b> → 상생 룬 <b style="color:${ELEMENTS[ru].color}">${elName(ru)}</b></div>`; });
+  $('guide').innerHTML=g;
+  renderWheel();
+
+  // 캔버스
+  const cx=180,cy=180, base=150, shrink=24;
+  let s=`<circle cx="180" cy="180" r="158" fill="none" stroke="#2a2148" stroke-width="1"/>`;
+  cr.shapes.forEach((sh,i)=>{
+    const r=base-i*shrink; const e=ELEMENTS[sh.el]; const active=i===cr.active;
+    s+=shapePath(e.geo,cx,cy,r,e.raw,2.4,active);
+    // 활성 도형 라벨
+    s+=`<text x="${cx}" y="${cy-r+ (e.geo==='rect'? -2 : 14)}" text-anchor="middle" font-size="12" fill="${e.raw}" opacity="${active?1:0.5}">${e.han}</text>`;
+    // 룬: 도형 안쪽 링에 분포
+    const rr=r*0.74; const n=sh.runes.length;
+    sh.runes.forEach((slot,k)=>{
+      const a=(-90+(n>1?k*(360/n):0))*Math.PI/180;
+      const x=cx+rr*Math.cos(a), y=cy+rr*Math.sin(a);
+      s+=`<circle cx="${x}" cy="${y}" r="11" fill="#120d20" stroke="${active?'#e8c75a':'#5a4f7a'}" stroke-width="1.5"/>`;
+      slot.forEach((re,m)=>{
+        const off=slot.length===2?(m===0?-5:5):0;
+        s+=`<text x="${x+off}" y="${y+4}" text-anchor="middle" font-size="${slot.length===2?9:12}" font-weight="800" fill="${ELEMENTS[re].raw}">${ELEMENTS[re].han}</text>`;
+      });
+    });
+  });
+  $('craftSvg').innerHTML=s;
+
+  // 도형 리스트
+  const list=$('shapeList'); list.innerHTML='';
+  cr.shapes.forEach((sh,i)=>{ const e=ELEMENTS[sh.el];
+    const d=document.createElement('div'); d.className='shape-item'+(i===cr.active?' active':'');
+    d.onclick=()=>selectShape(i);
+    d.innerHTML=`<b style="color:${e.color}">${e.han}</b> ${e.ko} <span class="tiny">· 룬 ${sh.runes.length}</span>
+      <span class="x" onclick="removeShape(${i},event)">✕</span>`;
+    list.appendChild(d);
+  });
+
+  // 품질 미리보기
+  const r2=scoreCraft();
+  $('qNum').textContent=Math.round(r2.quality*100)+'%';
+  $('qBar').style.width=Math.round(r2.quality*100)+'%';
+  $('qNote').textContent=r2.notes.length? ('보완: '+r2.notes[0]) : '요구 조건을 충족했습니다 👍';
+  $('finishBtn').disabled = cr.shapes.length===0;
+}
+
+/* ============================================================ 공통 렌더 */
+function renderAll(){
+  $('gold').textContent=state.gold;
+  $('bpCount').textContent=Object.keys(state.blueprints).length;
+  $('delivered').textContent=state.delivered;
+  renderCounter();
+}
+
+/* ============================================================ 시작 */
+spawnCustomer(); spawnCustomer();
+renderAll();
+</script>
+</body>
+</html>
